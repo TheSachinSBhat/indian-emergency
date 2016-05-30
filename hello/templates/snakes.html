@@ -83,8 +83,7 @@
 		document.getElementById('startLon').innerHTML = startPos.coords.longitude;
 
 		/* Update user's location */
-		USER_LOCATION.latitude = startPos.coords.latitude;
-		USER_LOCATION.longitude = startPos.coords.longitude;
+		USER_LOCATION = new google.maps.LatLng(startPos.coords.latitude, startPos.coords.longitude);
 
 		/* Display the user's location on Map */
 		displayUserLocationOnMap();
