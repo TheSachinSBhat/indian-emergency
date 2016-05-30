@@ -107,7 +107,7 @@
 	function displayUserLocationOnMap() {
 		/* Stores the map properties */
 		var mapProp = {
-			center: new google.maps.LatLng(USER_LOCATION.latitude, USER_LOCATION.longitude),
+			center: new google.maps.LatLng(USER_LOCATION.lat(), USER_LOCATION.lng()),
 			zoom: 18,
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		};
