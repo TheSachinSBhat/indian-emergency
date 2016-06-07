@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+
+{% block content %}
+
+<div class="jumbotron text-center">
+	<div class="container">
+		<h1>Snake Alert</h1>
+		<p>Helpful if you saw a snake</p>
+	</div>
+</div>
+<div class="container">
+	<p>Useful if you spot a snake in your neighbourhood </p>
+	<hr>
+	<button id="alert-location">Alert your location to the Snake Rescuers.</button>
+
+	<div>
+		<label>User Location</label>
+		<div id="user-location-div">
+			<div id="startLat"></div>
+			<div id="startLon"></div>
+		</div>
+	</div>
+	<div id="googleMap" style="width:1200px;height:600px;"></div>
+
+	<!--
+	Ideally these elements aren't created until it's confirmed that the
+	client supports video/camera, but for the sake of illustrating the
+	elements involved, they are created with markup (not JavaScript)
+	-->
+	<video id="video" width="640" height="480" autoplay></video>
+	<button id="snap">Snap Photo</button>
+	<canvas id="canvas" width="640" height="480"></canvas>
+</div>
+<script type="text/javascript">
+
+	/***** Global Variables *****/
+
+	/* Represents the Map object */
+	var GOOGLE_MAP;
+
+	/* Represents the user location */
+	var USER_LOCATION;
+
+	/***** UI Controls *****/
+
+	var userLocationDiv = $("user-location-div");
+
+	/***** Event Handlers *****/
+
+	/* Handler for location alert button. Triggered whenever user clicks on the button. */
+	$("#alert-location").click(function () {
+		/* Call translation method to ensure other relevant fields are updated accordingly */
+		updateUserLocation();
+	});
+
+	/***** Snake Alert Page specific functions *****/
+
+	/* Update user's location */
+	function updateUserLocation() {
+
+		/* Get the user's location */
+		getLocation();
+	}
+
+	/***** Generic Functions *****/
+
+	//document.addEventListener("deviceready", onDeviceReady, false);
+	//function onDeviceReady() {
+	//	console.log("navigator.geolocation works well");
+	//	alert("navigator.geolocation works well");
+	//}
+
+	/* Get the current location using HTML5 Geolocation */
+	/* Reference: http://www.w3schools.com/html/html5_geolocation.asp */
+	function getLocation() {
+		if (navigator.geolocation) {
+			//navigator.geolocation.getCurrentPosition(showPosition);
+			navigator.geolocation.getCurrentPosition(geoSuccess, geoError, geoOptions);
+		} else {
+			userLocationDiv.val("Geolocation is not supported by this browser.");
+		}
+	}
+
+	var geoOptions = {
+		timeout: 10 * 1000
+	}
+
+	var geoSuccess = function (position) {
+		startPos = position;
+		document.getElementById('startLat').innerHTML = startPos.coords.latitude;
+		document.getElementById('startLon').innerHTML = startPos.coords.longitude;
+
+		/* Update user's location */
+		USER_LOCATION = new google.maps.LatLng(startPos.coords.latitude, startPos.coords.longitude);
+
+		/* Display the user's location on Map */
+		displayUserLocationOnMap();
+	};
+	var geoError = function (error) {
+		console.log('Error occurred. Error code: ' + error.code);
+		// error.code can be:
+		//   0: unknown error
+		//   1: permission denied
+		//   2: position unavailable (error response from location provider)
+		//   3: timed out
+	};
+
+	/* Callback function to display the location */
+	function showPosition(position) {
+		userLocationDiv.val("Latitude: " + position.coords.latitude +
+		"<br>Longitude: " + position.coords.longitude);
+	}
+
+	/* Displays the user's location on the map */
+	function displayUserLocationOnMap() {
+		/* Stores the map properties */
+		var mapProp = {
+			center: new google.maps.LatLng(USER_LOCATION.lat(), USER_LOCATION.lng()),
+			zoom: 18,
+			mapTypeId: google.maps.MapTypeId.ROADMAP
+		};
+
+		GOOGLE_MAP = new google.maps.Map(document.getElementById("googleMap"), mapProp);
+
+		/* Add location marker on Google Map */
+		var marker = new google.maps.Marker({
+			position: USER_LOCATION,
+			map: GOOGLE_MAP,
+			title: "Your location"
+		});
+	}
+
+	var canvasContext;
+
+	// Put event listeners into place
+	window.addEventListener("DOMContentLoaded", function () {
+		// Grab elements, create settings, etc.
+		var canvas = document.getElementById("canvas"),
+			context = canvas.getContext("2d"),
+			video = document.getElementById("video"),
+			videoObj = { "video": true },
+			errBack = function (error) {
+				console.log("Video capture error: ", error.code);
+			};
+
+		canvasContext = context;
+
+		// Put video listeners into place
+		if (navigator.getUserMedia) { // Standard
+			navigator.getUserMedia(videoObj, function (stream) {
+				video.src = stream;
+				video.play();
+			}, errBack);
+		} else if (navigator.webkitGetUserMedia) { // WebKit-prefixed
+			navigator.webkitGetUserMedia(videoObj, function (stream) {
+				video.src = window.webkitURL.createObjectURL(stream);
+				video.play();
+			}, errBack);
+		}
+		else if (navigator.mozGetUserMedia) { // Firefox-prefixed
+			navigator.mozGetUserMedia(videoObj, function (stream) {
+				video.src = window.URL.createObjectURL(stream);
+				video.play();
+			}, errBack);
+		}
+	}, false);
+
+	// Trigger photo take
+	document.getElementById("snap").addEventListener("click", function () {
+		canvasContext.drawImage(video, 0, 0, 640, 480);
+	});
+
+</script>
+{% endblock %}
