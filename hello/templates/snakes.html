@@ -131,6 +131,8 @@
 		});
 	}
 
+	var canvasContext;
+
 	// Put event listeners into place
 	window.addEventListener("DOMContentLoaded", function () {
 		// Grab elements, create settings, etc.
@@ -141,6 +143,8 @@
 			errBack = function (error) {
 				console.log("Video capture error: ", error.code);
 			};
+
+		canvasContext = context;
 
 		// Put video listeners into place
 		if (navigator.getUserMedia) { // Standard
@@ -164,7 +168,7 @@
 
 	// Trigger photo take
 	document.getElementById("snap").addEventListener("click", function () {
-		context.drawImage(video, 0, 0, 640, 480);
+		canvasContext.drawImage(video, 0, 0, 640, 480);
 	});
 
 </script>
